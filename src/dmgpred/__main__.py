@@ -8,8 +8,8 @@ import numpy as np
 import pandas as pd
 from joblib import dump
 from sklearn import set_config
+from sklearn.preprocessing import LabelEncoder
 
-from dmgpred.cleaning import clean
 from dmgpred.evaluate import evaluate
 from dmgpred.featurize import featurize
 from dmgpred.train import train
@@ -55,9 +55,10 @@ def main(add_metrics):
     y_train = pd.read_csv(TRAIN_LABELS_PATH, index_col=INDEX_COL)
     y_train = y_train[TARGET]
 
-    X_train, X_test = clean(X_train, X_test)
+    # X_train, X_test = clean(X_train, X_test)
     X_train, X_test = featurize(X_train, X_test)
-
+    label_encoder = LabelEncoder()
+    y_train = label_encoder.fit_transform(y_train)  # TODO: integrate into pipeline
     model = train(X_train, y_train)
     dump(model, f"{OUTPUT_PATH}/trained_model.pkl")
     y_pred = model.predict(X_test)
