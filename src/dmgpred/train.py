@@ -4,7 +4,8 @@ import pandas as pd
 from sklearn.dummy import DummyClassifier
 from sklearn.feature_selection import SelectKBest, mutual_info_classif
 from sklearn.pipeline import Pipeline
-from xgboost import XGBClassifier
+from sklearn.svm import SVC
+from sklearn.tree import DecisionTreeClassifier
 
 from dmgpred.cleaning import get_normalization_pipeline
 from dmgpred.featurize import get_encoder
@@ -45,7 +46,9 @@ def train(X_train: pd.DataFrame, y_train: pd.DataFrame):
     This model is used to predict the damage grade of the test data.
     A seperate evaluation is done using cross-validation.
     """
-    clf = XGBClassifier()
+    # clf = XGBClassifier()
+    clf = SVC()
+    clf = DecisionTreeClassifier()
     pipe = get_pipeline(X_train, clf=clf)
     pipe.fit(X_train, y_train)
     return pipe
