@@ -4,8 +4,6 @@ import pandas as pd
 from catboost import CatBoostClassifier
 from imblearn.pipeline import Pipeline
 from sklearn.dummy import DummyClassifier
-from sklearn.ensemble import VotingClassifier
-from xgboost import XGBClassifier
 
 from dmgpred.cleaning import get_normalizer
 from dmgpred.featurize import get_encoder
@@ -38,8 +36,9 @@ def get_classifier(X_train: pd.DataFrame, use_gpu=True):
         device = "cuda"
     else:
         task_type = "CPU"
-        device = "cpu"
+        device = "cpu"  # noqa: F841
 
+    """
     return VotingClassifier(
         estimators=[
             (
@@ -64,6 +63,23 @@ def get_classifier(X_train: pd.DataFrame, use_gpu=True):
         ],
         voting="soft",
     )
+    """
+
+    return CatBoostClassifier(
+        n_estimators=500,
+        cat_features=cat_features,
+        task_type=task_type,
+        auto_class_weights="Balanced",
+        verbose=False,
+    )
+    """
+    return XGBClassifier(
+                    enable_categorical=True,
+                    n_estimators=500,
+                    tree_method="hist",
+                    device=device,
+                )
+    """
 
 
 def train(X_train: pd.DataFrame, y_train: pd.DataFrame, use_gpu=True):

@@ -72,7 +72,7 @@ def main(add_metrics, n_folds, log_level, use_gpu):
     # need building id as index here,
     # otherwise it is interpreted as multi-output classification
     y_train = pd.read_csv(TRAIN_LABELS_PATH, index_col=INDEX_COL)
-    y_train = y_train[TARGET]
+    y_train = y_train[TARGET] - 1
 
     X_train, X_test = clean(X_train, X_test)
     X_train, X_test = featurize(X_train, X_test)
@@ -85,7 +85,6 @@ def main(add_metrics, n_folds, log_level, use_gpu):
 
     if add_metrics is not None:
         add_metrics = {metric: metric for metric in add_metrics.split(",")}
-
     logger.info(f"Evaluating the model with {n_folds}-fold Cross-Validation...")
     _ = evaluate(
         model,
@@ -97,7 +96,7 @@ def main(add_metrics, n_folds, log_level, use_gpu):
     )
 
     Path(OUTPUT_PATH).mkdir(parents=False, exist_ok=True)
-    submission = pd.DataFrame({INDEX_COL: X_test.index, TARGET: y_pred})
+    submission = pd.DataFrame({INDEX_COL: X_test.index, TARGET: np.squeeze(y_pred)})
     submission.to_csv(SUBMISSION_PATH, index=False)
     logger.info(f"Submission saved to {SUBMISSION_PATH}")
     end = time.perf_counter()

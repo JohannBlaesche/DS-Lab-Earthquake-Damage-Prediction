@@ -4,6 +4,7 @@ import time
 
 import numpy as np
 import pandas as pd
+from imblearn.under_sampling import RandomUnderSampler
 from loguru import logger
 from sklearn.base import BaseEstimator
 from sklearn.metrics import (
@@ -116,6 +117,8 @@ def cross_validate_custom(model, X, y, cv, scoring, train_scores=False):
         start = time.perf_counter()
         X_train, X_test = X.iloc[train_index], X.iloc[test_index]
         y_train, y_test = y.iloc[train_index], y.iloc[test_index]
+        rus = RandomUnderSampler(random_state=42, sampling_strategy="all")
+        X_train, y_train = rus.fit_resample(X_train, y_train)
         model.fit(X_train, y_train)
         for key in scoring:
             scoring_arr = scores[f"test_{key}"]
