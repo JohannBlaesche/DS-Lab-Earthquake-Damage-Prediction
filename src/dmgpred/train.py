@@ -3,6 +3,9 @@
 import pandas as pd
 from catboost import CatBoostClassifier
 from imblearn.pipeline import Pipeline
+from imblearn.under_sampling import (
+    CondensedNearestNeighbour,
+)
 from sklearn.dummy import DummyClassifier
 
 from dmgpred.cleaning import get_normalizer
@@ -18,7 +21,8 @@ def get_pipeline(X: pd.DataFrame, clf=None):
     return Pipeline(
         [
             ("normalizer", normalizer),
-            # ("encoder", encoder),
+            ("encoder", encoder),
+            ("undersampler", CondensedNearestNeighbour(n_neighbors=1, n_jobs=-1)),
             ("clf", clf),
         ],
         verbose=False,
@@ -27,7 +31,7 @@ def get_pipeline(X: pd.DataFrame, clf=None):
 
 def get_classifier(X_train: pd.DataFrame, use_gpu=True):
     """Return the classifier used in the pipeline."""
-    cat_features = X_train.select_dtypes(
+    cat_features = X_train.select_dtypes(  # noqa: F841
         include=["object", "category"]
     ).columns.tolist()
 
@@ -67,7 +71,7 @@ def get_classifier(X_train: pd.DataFrame, use_gpu=True):
 
     return CatBoostClassifier(
         n_estimators=500,
-        cat_features=cat_features,
+        # cat_features=cat_features,
         task_type=task_type,
         auto_class_weights="Balanced",
         verbose=False,

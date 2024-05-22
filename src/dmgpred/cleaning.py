@@ -71,9 +71,9 @@ def dtype_conversion(X: pd.DataFrame):
     """Convert columns types."""
     cat_cols = X.select_dtypes(include="object").columns
     binary_cols = [col for col in X.columns if col.startswith("has")]
-    geo_levels = [col for col in X.columns if col.startswith("geo_level")]
+    geo_levels = [col for col in X.columns if col.startswith("geo_level")]  # noqa: F841
 
-    X[geo_levels] = X[geo_levels].astype("category")
+    # X[geo_levels] = X[geo_levels].astype("category")
     X[binary_cols] = X[binary_cols].astype(bool)
     X[cat_cols] = X[cat_cols].astype("category")
     X["count_families"] = pd.cut(
