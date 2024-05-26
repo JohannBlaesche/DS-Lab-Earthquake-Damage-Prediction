@@ -97,7 +97,7 @@ def main(add_metrics, n_folds, log_level, use_gpu):
     )
 
     Path(OUTPUT_PATH).mkdir(parents=False, exist_ok=True)
-    submission = pd.DataFrame({INDEX_COL: X_test.index, TARGET: y_pred})
+    submission = pd.DataFrame({INDEX_COL: X_test.index, TARGET: y_pred.reshape(-1)})
     submission.to_csv(SUBMISSION_PATH, index=False)
     logger.info(f"Submission saved to {SUBMISSION_PATH}")
     end = time.perf_counter()
