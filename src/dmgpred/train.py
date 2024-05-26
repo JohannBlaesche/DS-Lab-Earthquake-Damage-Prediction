@@ -4,6 +4,11 @@ import pandas as pd
 from catboost import CatBoostClassifier
 from imblearn.pipeline import Pipeline
 from sklearn.dummy import DummyClassifier
+from sklearn.ensemble import VotingClassifier
+from sklearn.multiclass import (
+    OutputCodeClassifier,
+)
+from xgboost import XGBClassifier
 
 from dmgpred.cleaning import get_normalizer
 from dmgpred.featurize import get_encoder
@@ -18,7 +23,7 @@ def get_pipeline(X: pd.DataFrame, clf=None):
     return Pipeline(
         [
             ("normalizer", normalizer),
-            # ("encoder", encoder),
+            ("encoder", encoder),
             ("clf", clf),
         ],
         verbose=False,
@@ -27,7 +32,7 @@ def get_pipeline(X: pd.DataFrame, clf=None):
 
 def get_classifier(X_train: pd.DataFrame, use_gpu=True):
     """Return the classifier used in the pipeline."""
-    cat_features = X_train.select_dtypes(
+    cat_features = X_train.select_dtypes(  # noqa: F841
         include=["object", "category"]
     ).columns.tolist()
 
@@ -38,37 +43,31 @@ def get_classifier(X_train: pd.DataFrame, use_gpu=True):
         task_type = "CPU"
         device = "cpu"  # noqa: F841
 
-    # return VotingClassifier(
-    #     estimators=[
-    #         (
-    #             "xgb",
-    #             XGBClassifier(
-    #                 enable_categorical=True,
-    #                 n_estimators=500,
-    #                 tree_method="hist",
-    #                 device=device,
-    #             ),
-    #         ),
-    #         (
-    #             "catboost",
-    #             CatBoostClassifier(
-    #                 n_estimators=1000,
-    #                 cat_features=cat_features,
-    #                 task_type=task_type,
-    #                 auto_class_weights="Balanced",
-    #                 verbose=False,
-    #             ),
-    #         ),
-    #     ],
-    #     voting="soft",
-    # )
-
-    return CatBoostClassifier(
-        n_estimators=500,
-        cat_features=cat_features,
-        task_type=task_type,
-        auto_class_weights="Balanced",
-        verbose=False,
+    return OutputCodeClassifier(
+        VotingClassifier(
+            estimators=[
+                (
+                    "xgb",
+                    XGBClassifier(
+                        enable_categorical=True,
+                        n_estimators=500,
+                        tree_method="hist",
+                        device=device,
+                    ),
+                ),
+                (
+                    "catboost",
+                    CatBoostClassifier(
+                        n_estimators=500,
+                        # cat_features=cat_features,
+                        task_type=task_type,
+                        auto_class_weights="Balanced",
+                        verbose=False,
+                    ),
+                ),
+            ],
+            voting="soft",
+        )
     )
 
 
